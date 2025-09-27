@@ -252,47 +252,58 @@
   </div>
 
   <script>
-    // Reveal on scroll
-    const reveals = document.querySelectorAll('.reveal');
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
-    },{threshold:0.12});
-    reveals.forEach(r=>io.observe(r));
+  // Check if device is mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // Open PDF / external file inside modal iframe if same-origin or open new tab when blocked
-    document.addEventListener('click', (e)=>{
-      const a = e.target.closest('a');
-      if(!a) return;
-      const href = a.getAttribute('href');
-      // only intercept local assets PDFs to open inside modal
-      if(href && href.startsWith('assets/') && href.toLowerCase().endsWith('.pdf')){
-        e.preventDefault();
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+  },{threshold:0.12});
+  reveals.forEach(r=>io.observe(r));
+
+  // Handle PDF click
+  document.addEventListener('click', (e)=>{
+    const a = e.target.closest('a');
+    if(!a) return;
+    const href = a.getAttribute('href');
+    
+    if(href && href.startsWith('assets/') && href.toLowerCase().endsWith('.pdf')){
+      e.preventDefault();
+      
+      if(isMobile){
+        // On mobile → open directly in new tab
+        window.open(href, '_blank');
+      } else {
+        // On desktop → open in modal
         const iframe = document.getElementById('previewFrame');
         iframe.src = href;
         document.getElementById('overlay').classList.add('open');
         document.getElementById('overlay').setAttribute('aria-hidden','false');
       }
-    });
+    }
+  });
 
-    document.getElementById('closeBtn').addEventListener('click', ()=>{
-      document.getElementById('overlay').classList.remove('open');
-      document.getElementById('overlay').setAttribute('aria-hidden','true');
-      document.getElementById('previewFrame').src = '';
-    });
+  document.getElementById('closeBtn').addEventListener('click', ()=>{
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('overlay').setAttribute('aria-hidden','true');
+    document.getElementById('previewFrame').src = '';
+  });
 
-    // close on esc or click outside
-    document.getElementById('overlay').addEventListener('click', (e)=>{
-      if(e.target.id === 'overlay'){
-        document.getElementById('closeBtn').click();
-      }
-    });
-    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') document.getElementById('closeBtn').click(); });
+  // close on esc or click outside
+  document.getElementById('overlay').addEventListener('click', (e)=>{
+    if(e.target.id === 'overlay'){
+      document.getElementById('closeBtn').click();
+    }
+  });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') document.getElementById('closeBtn').click(); });
 
-    // progressive image loading (if you add data-src)
-    document.querySelectorAll('img[data-src]').forEach(img=>{
-      const src = img.getAttribute('data-src');
-      const i = new Image(); i.onload = ()=>img.src = src; i.src = src;
-    });
-  </script>
+  // progressive image loading (if you add data-src)
+  document.querySelectorAll('img[data-src]').forEach(img=>{
+    const src = img.getAttribute('data-src');
+    const i = new Image(); i.onload = ()=>img.src = src; i.src = src;
+  });
+</script>
+
 </body>
 </html>
